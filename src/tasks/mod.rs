@@ -31,4 +31,14 @@ impl Task {
         aidevs::post_answer(&config, &token, &answer).await?;
         Ok(())
     }
+
+    pub async fn hint(self, config: Config) -> anyhow::Result<()> {
+        let task_name = self.to_string();
+        log::info!("Get '{task_name}' task hint");
+
+        let response = aidevs::get_hint(&config, &task_name).await?;
+        println!("{task_name} Hint: {response}");
+
+        Ok(())
+    }
 }

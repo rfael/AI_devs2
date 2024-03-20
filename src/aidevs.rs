@@ -48,16 +48,15 @@ pub async fn get_task_token(config: &Config, task_name: &str) -> anyhow::Result<
         .ok_or(anyhow!("API response do not contain token"))
 }
 
-#[allow(dead_code)]
-pub async fn get_hint(config: &Config, task_name: &str) -> anyhow::Result<()> {
+pub async fn get_hint(config: &Config, task_name: &str) -> anyhow::Result<String> {
     let mut url = config.api_url.clone();
     url.set_path(&format!("hint/{task_name}"));
 
     let response = reqwest::get(url).await?.json::<HintResponse>().await?;
 
-    log::info!("Hint: {}", response.answer);
+    log::debug!("Hint response: {response:?}");
 
-    Ok(())
+    Ok(response.answer)
 }
 
 pub async fn get_task(config: &Config, token: &str) -> anyhow::Result<Response> {
