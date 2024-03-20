@@ -9,11 +9,7 @@ use clap::Parser;
 use dotenv::dotenv;
 use envconfig::Envconfig;
 
-use crate::{
-    cli::{Cli, Task},
-    config::Config,
-    tasks::helloapi,
-};
+use crate::{cli::Cli, config::Config};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -25,10 +21,5 @@ async fn main() -> anyhow::Result<()> {
     let config = Config::init_from_env()?;
     let cli = Cli::parse();
 
-    match cli.task {
-        Task::Helloapi => helloapi::run(config),
-    }
-    .await?;
-
-    Ok(())
+    cli.task.run(config).await
 }
