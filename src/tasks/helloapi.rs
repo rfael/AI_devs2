@@ -1,10 +1,17 @@
 use anyhow::anyhow;
 use reqwest::Response;
+use serde::Deserialize;
 
-use crate::aidevs::HelloApiResponse;
+#[derive(Debug, Deserialize)]
+#[allow(dead_code)]
+struct HelloApiTaskResponse {
+    code: i32,
+    msg: String,
+    cookie: Option<String>,
+}
 
-pub async fn run(task_api_response: Response) -> anyhow::Result<String> {
-    let task_response = task_api_response.json::<HelloApiResponse>().await?;
+pub(super) async fn run(task_api_response: Response) -> anyhow::Result<String> {
+    let task_response = task_api_response.json::<HelloApiTaskResponse>().await?;
     log::debug!("Task API response: {task_response:#?}");
 
     let cookie = task_response
