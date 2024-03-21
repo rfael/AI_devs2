@@ -1,6 +1,6 @@
 use anyhow::{anyhow, bail};
 use reqwest::Response;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use crate::config::Config;
@@ -67,26 +67,25 @@ pub async fn get_task(config: &Config, token: &str) -> anyhow::Result<Response> 
     Ok(response)
 }
 
-pub async fn post_answer(
+pub async fn post_answer<T: Serialize>(
     config: &Config,
     token: &str,
-    answer: &str,
+    payload: &T,
 ) -> anyhow::Result<AnswerResponse> {
     let mut url = config.api_url.clone();
     url.set_path(&format!("answer/{token}"));
 
     let client = reqwest::Client::new();
-    let payload = json!({ "answer" : answer});
 
     let response = client
         .post(url)
-        .json(&payload)
+        .json(payload)
         .send()
         .await?
         .json::<AnswerResponse>()
         .await?;
 
-    log::debug!("Answer response: {response:#?}");
+    log::debug!("Answer response: {response:?}");
 
     Ok(response)
 }
