@@ -4,9 +4,10 @@ use async_openai::{
     types::{CreateModerationRequestArgs, TextModerationModel},
     Client,
 };
-use reqwest::Response;
 use serde::Deserialize;
 use serde_json::{json, Value};
+
+use crate::{aidevs, config::Config};
 
 #[derive(Debug, Deserialize)]
 struct ModerationTaskResponse {
@@ -17,9 +18,10 @@ struct ModerationTaskResponse {
 
 /// The task involved fetching a list of inputs from the API and assessing whether their content should be moderated.
 ///
-/// * `task_api_response`:
-pub(super) async fn run(task_api_response: Response) -> anyhow::Result<Value> {
-    let task_response = task_api_response.json::<ModerationTaskResponse>().await?;
+/// * `config`: App configuration
+/// * `token`: Task token
+pub(super) async fn run(config: &Config, token: &str) -> anyhow::Result<Value> {
+    let task_response = aidevs::get_task::<ModerationTaskResponse>(config, token).await?;
     log::debug!("Task API response: {task_response:#?}");
     log::info!("Task message: {}", task_response.msg);
 
@@ -27,8 +29,8 @@ pub(super) async fn run(task_api_response: Response) -> anyhow::Result<Value> {
         bail!("Code in response is not equal 0")
     }
 
-    let config = OpenAIConfig::default();
-    let client = Client::with_config(config);
+    let openai_config = OpenAIConfig::default();
+    let client = Client::with_config(openai_config);
     let request = CreateModerationRequestArgs::default()
         .input(task_response.input)
         .model(TextModerationModel::Latest)
