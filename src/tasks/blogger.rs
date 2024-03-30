@@ -12,6 +12,8 @@ use serde_json::{json, Value};
 
 use crate::{aidevs, config::Config};
 
+const MODEL: &str = "gpt-3.5-turbo";
+
 #[derive(Debug, Deserialize)]
 struct BloggerTaskResponse {
     code: i32,
@@ -62,7 +64,7 @@ async fn generate_chapter_content(
     log::info!("Request for chapter about: {topic}");
 
     let request = CreateChatCompletionRequestArgs::default()
-        .model("gpt-3.5-turbo")
+        .model(MODEL)
         .messages([
             system_message.into(),
             ChatCompletionRequestUserMessageArgs::default()
