@@ -7,6 +7,7 @@ use async_openai::{
     },
     Client,
 };
+use futures::stream::{FuturesOrdered, TryStreamExt};
 use serde::Deserialize;
 use serde_json::{json, Value};
 
@@ -41,16 +42,13 @@ pub(super) async fn run(config: &Config, token: &str) -> anyhow::Result<Value> {
         .content("You're a culinary blogger, you write a blog about Margherita pizza. Expand on the topic provided in Polish.")
         .build()?;
 
-    let mut chapters = Vec::with_capacity(task_response.blog.len());
-    for chapter_topic in task_response.blog {
-        log::info!("Request for chapter about: {chapter_topic}");
-
-        let chapter =
-            generate_chapter_content(&client, system_message.clone(), &chapter_topic).await?;
-
-        log::info!("Chapter content: {chapter}");
-        chapters.push(chapter);
-    }
+    let chapters = task_response
+        .blog
+        .iter()
+        .map(|topic| generate_chapter_content(&client, system_message.clone(), topic))
+        .collect::<FuturesOrdered<_>>()
+        .try_collect::<Vec<_>>()
+        .await?;
 
     let payload = json!({ "answer" : chapters});
     Ok(payload)
@@ -82,7 +80,10 @@ async fn generate_chapter_content(
         .filter_map(|c| c.message.content)
         .collect::<Vec<_>>();
 
-    chapter_variants.pop().ok_or(anyhow!(
+    let chapter = chapter_variants.pop().ok_or(anyhow!(
         "Choices for chapter topic '{topic}' do not contain content."
-    ))
+    ))?;
+    log::info!("Chapter content: {chapter}");
+
+    Ok(chapter)
 }

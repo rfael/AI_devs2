@@ -36,6 +36,7 @@ dependencies = [
  "dotenv",
  "env_logger",
  "envconfig",
+ "futures",
  "log",
  "reqwest",
  "serde",
