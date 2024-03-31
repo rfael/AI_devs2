@@ -4,6 +4,7 @@ mod helloapi;
 mod inprompt;
 mod liar;
 mod moderation;
+mod whisper;
 
 use clap::Subcommand;
 use std::string::ToString;
@@ -36,6 +37,10 @@ pub enum Task {
     /// run 'embedding' task
     #[strum(serialize = "embedding")]
     Embedding,
+
+    /// run 'whisper' task
+    #[strum(serialize = "whisper")]
+    Whisper,
 }
 
 impl Task {
@@ -53,6 +58,7 @@ impl Task {
             Self::Liar => liar::run(&config, &token).await,
             Self::Inprompt => inprompt::run(&config, &token).await,
             Task::Embedding => embedding::run().await,
+            Self::Whisper => whisper::run(&config, &token).await,
         }?;
 
         aidevs::post_answer(&config, &token, &answer).await?;
