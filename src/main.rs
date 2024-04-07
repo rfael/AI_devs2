@@ -2,6 +2,7 @@ mod aidevs;
 mod cli;
 mod config;
 mod tasks;
+mod utils;
 
 use std::env;
 
