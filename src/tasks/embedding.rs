@@ -1,6 +1,7 @@
-use anyhow::anyhow;
-use async_openai::{config::OpenAIConfig, types::CreateEmbeddingRequestArgs, Client};
+use async_openai::{config::OpenAIConfig, Client};
 use serde_json::{json, Value};
+
+use crate::utils::embed_text;
 
 const INPUT: &str = "Hawaiian pizza";
 const MODEL: &str = "text-embedding-ada-002";
@@ -12,17 +13,7 @@ pub(super) async fn run() -> anyhow::Result<Value> {
 
     let openai_config = OpenAIConfig::default();
     let client = Client::with_config(openai_config);
-    let request = CreateEmbeddingRequestArgs::default()
-        .model(MODEL)
-        .input(INPUT)
-        .build()?;
-
-    let mut response = client.embeddings().create(request).await?;
-    let embedding = response
-        .data
-        .pop()
-        .ok_or(anyhow!("Model response do not containg embedding array"))?
-        .embedding;
+    let embedding = embed_text(&client, MODEL, INPUT).await?.embedding;
 
     log::info!("Received embedding array length: {}", embedding.len());
 

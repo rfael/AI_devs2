@@ -7,4 +7,6 @@ pub(crate) struct Config {
     pub api_url: Url,
     #[envconfig(from = "AI_DEVS2_API_KEY")]
     pub api_key: String,
+    #[envconfig(from = "QDRANT_URL")]
+    pub qdrant_url: Option<Url>,
 }
