@@ -1,6 +1,7 @@
 mod blogger;
 mod embedding;
 mod functions;
+mod gnome;
 mod helloapi;
 mod inprompt;
 mod knowledge;
@@ -81,6 +82,10 @@ pub enum Task {
     /// run 'tools' task
     #[strum(serialize = "tools")]
     Tools,
+
+    /// run 'gnome' task
+    #[strum(serialize = "gnome")]
+    Gnome,
 }
 
 impl Task {
@@ -107,6 +112,7 @@ impl Task {
             Self::People => people::run(&config, &token).await,
             Self::Knowledge => knowledge::run(&config, &token).await,
             Self::Tools => tools::run(&config, &token).await,
+            Self::Gnome => gnome::run(&config, &token).await,
         }?;
 
         aidevs::post_answer(&config, &token, &answer).await?;
