@@ -1,4 +1,5 @@
 use anyhow::{anyhow, bail};
+use async_openai::{config::OpenAIConfig, Client};
 use reqwest::header;
 use reqwest_middleware::ClientBuilder;
 use reqwest_retry::{policies::ExponentialBackoff, RetryTransientMiddleware};
@@ -37,14 +38,17 @@ pub(super) async fn run(config: &Config, token: &str) -> anyhow::Result<Value> {
 
     let context_header = [
         "Answer on my question only using data prowided after ### markers.",
-        "Answers concisely as possible",
+        "Answer concisely as possible",
+        "Answer in Polish",
         "###",
     ]
     .join("\n");
     let context = format!("{context_header}\n{article}");
     log::debug!("Context for LLM: {context}");
 
-    let answer = ask_llm(MODEL, &task_response.question, Some(&context)).await?;
+    let openai_config = OpenAIConfig::default();
+    let client = Client::with_config(openai_config);
+    let answer = ask_llm(&client, MODEL, &task_response.question, Some(&context)).await?;
     if answer.len() > MAX_AMSWER_LENGTH {
         bail!("{MODEL} answer too long.")
     }

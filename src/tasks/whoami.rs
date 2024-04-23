@@ -1,4 +1,5 @@
 use anyhow::bail;
+use async_openai::{config::OpenAIConfig, Client};
 use serde::Deserialize;
 use serde_json::{json, Value};
 
@@ -23,13 +24,16 @@ pub(super) async fn run(config: &Config, token: &str) -> anyhow::Result<Value> {
     let question = "Who is being talked about?";
     let context_header = [
         "Answer on my question using data prowided after ### markers and your base knowledge",
-        "Answers concisely as possible",
+        "Answer concisely as possible",
         "If you do not know the persons name and surname reply only with 'Not enough data'",
         "",
         "###",
     ];
 
     let mut context = context_header.join("\n");
+
+    let openai_config = OpenAIConfig::default();
+    let client = Client::with_config(openai_config);
 
     loop {
         let hint = get_next_hint(config, token).await?;
@@ -39,7 +43,7 @@ pub(super) async fn run(config: &Config, token: &str) -> anyhow::Result<Value> {
 
         context.push_str(&hint);
 
-        let answer = ask_llm(MODEL, question, Some(&context)).await?;
+        let answer = ask_llm(&client, MODEL, question, Some(&context)).await?;
         if answer.contains("Not enough data") {
             log::info!("Not enough data, fetching next hint");
             continue;

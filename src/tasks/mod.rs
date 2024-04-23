@@ -7,6 +7,7 @@ mod liar;
 mod moderation;
 mod rodo;
 mod scraper;
+mod search;
 mod whisper;
 mod whoami;
 
@@ -61,6 +62,10 @@ pub enum Task {
     /// run 'whoami' task
     #[strum(serialize = "whoami")]
     Whoami,
+
+    /// run 'search' task
+    #[strum(serialize = "search")]
+    Search,
 }
 
 impl Task {
@@ -83,6 +88,7 @@ impl Task {
             Self::Rodo => rodo::run(&config, &token).await,
             Self::Scraper => scraper::run(&config, &token).await,
             Self::Whoami => whoami::run(&config, &token).await,
+            Self::Search => search::run(&config, &token).await,
         }?;
 
         aidevs::post_answer(&config, &token, &answer).await?;
