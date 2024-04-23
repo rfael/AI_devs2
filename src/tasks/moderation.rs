@@ -9,16 +9,19 @@ use serde::Deserialize;
 use serde_json::{json, Value};
 
 #[derive(Debug, Deserialize)]
-#[allow(dead_code)]
 struct ModerationTaskResponse {
     code: i32,
     msg: String,
     input: Vec<String>,
 }
 
+/// The task involved fetching a list of inputs from the API and assessing whether their content should be moderated.
+///
+/// * `task_api_response`:
 pub(super) async fn run(task_api_response: Response) -> anyhow::Result<Value> {
     let task_response = task_api_response.json::<ModerationTaskResponse>().await?;
     log::debug!("Task API response: {task_response:#?}");
+    log::info!("Task message: {}", task_response.msg);
 
     if task_response.code != 0 {
         bail!("Code in response is not equal 0")

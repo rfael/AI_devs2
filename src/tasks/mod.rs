@@ -1,3 +1,4 @@
+mod blogger;
 mod helloapi;
 mod moderation;
 
@@ -16,6 +17,10 @@ pub enum Task {
     /// run 'moderation' task
     #[strum(serialize = "moderation")]
     Moderation,
+
+    /// run 'blogger' task
+    #[strum(serialize = "blogger")]
+    Blogger,
 }
 
 impl Task {
@@ -31,6 +36,7 @@ impl Task {
         let answer = match self {
             Self::Helloapi => helloapi::run(task_api_response).await,
             Self::Moderation => moderation::run(task_api_response).await,
+            Self::Blogger => blogger::run(task_api_response).await,
         }?;
 
         aidevs::post_answer(&config, &token, &answer).await?;
