@@ -1,5 +1,6 @@
 mod blogger;
 mod helloapi;
+mod liar;
 mod moderation;
 
 use clap::Subcommand;
@@ -21,6 +22,10 @@ pub enum Task {
     /// run 'blogger' task
     #[strum(serialize = "blogger")]
     Blogger,
+
+    /// run 'liar' task
+    #[strum(serialize = "liar")]
+    Liar,
 }
 
 impl Task {
@@ -31,12 +36,11 @@ impl Task {
         let token = aidevs::get_task_token(&config, &task_name).await?;
         log::debug!("Received token: {token}");
 
-        let task_api_response = aidevs::get_task(&config, &token).await?;
-
         let answer = match self {
-            Self::Helloapi => helloapi::run(task_api_response).await,
-            Self::Moderation => moderation::run(task_api_response).await,
-            Self::Blogger => blogger::run(task_api_response).await,
+            Self::Helloapi => helloapi::run(&config, &token).await,
+            Self::Moderation => moderation::run(&config, &token).await,
+            Self::Blogger => blogger::run(&config, &token).await,
+            Self::Liar => liar::run(&config, &token).await,
         }?;
 
         aidevs::post_answer(&config, &token, &answer).await?;

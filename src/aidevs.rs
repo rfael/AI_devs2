@@ -1,6 +1,5 @@
 use anyhow::{anyhow, bail};
-use reqwest::Response;
-use serde::{Deserialize, Serialize};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::json;
 
 use crate::config::Config;
@@ -59,11 +58,11 @@ pub async fn get_hint(config: &Config, task_name: &str) -> anyhow::Result<String
     Ok(response.answer)
 }
 
-pub async fn get_task(config: &Config, token: &str) -> anyhow::Result<Response> {
+pub async fn get_task<T: DeserializeOwned>(config: &Config, token: &str) -> anyhow::Result<T> {
     let mut url = config.api_url.clone();
     url.set_path(&format!("task/{token}"));
 
-    let response = reqwest::get(url).await?;
+    let response = reqwest::get(url).await?.json::<T>().await?;
     Ok(response)
 }
 

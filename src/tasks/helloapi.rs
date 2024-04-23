@@ -1,7 +1,8 @@
 use anyhow::{anyhow, bail};
-use reqwest::Response;
 use serde::Deserialize;
 use serde_json::{json, Value};
+
+use crate::{aidevs, config::Config};
 
 #[derive(Debug, Deserialize)]
 struct HelloApiTaskResponse {
@@ -13,9 +14,10 @@ struct HelloApiTaskResponse {
 /// Test task for learning how AI_Devs 2 task API works.
 /// The task involved retrieving messages from the API and returning the contents of the 'cookie' field in the response.
 ///
-/// * `task_api_response`:
-pub(super) async fn run(task_api_response: Response) -> anyhow::Result<Value> {
-    let task_response = task_api_response.json::<HelloApiTaskResponse>().await?;
+/// * `config`: App configuration
+/// * `token`: Task token
+pub(super) async fn run(config: &Config, token: &str) -> anyhow::Result<Value> {
+    let task_response = aidevs::get_task::<HelloApiTaskResponse>(config, token).await?;
     log::debug!("Task API response: {task_response:#?}");
     log::info!("Task message: {}", task_response.msg);
 
