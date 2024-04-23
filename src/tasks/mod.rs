@@ -3,6 +3,7 @@ mod embedding;
 mod functions;
 mod helloapi;
 mod inprompt;
+mod knowledge;
 mod liar;
 mod moderation;
 mod people;
@@ -71,6 +72,10 @@ pub enum Task {
     /// run 'people' task
     #[strum(serialize = "people")]
     People,
+
+    /// run 'knowledge' task
+    #[strum(serialize = "knowledge")]
+    Knowledge,
 }
 
 impl Task {
@@ -95,6 +100,7 @@ impl Task {
             Self::Whoami => whoami::run(&config, &token).await,
             Self::Search => search::run(&config, &token).await,
             Self::People => people::run(&config, &token).await,
+            Self::Knowledge => knowledge::run(&config, &token).await,
         }?;
 
         aidevs::post_answer(&config, &token, &answer).await?;
