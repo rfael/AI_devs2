@@ -10,6 +10,7 @@ mod people;
 mod rodo;
 mod scraper;
 mod search;
+mod tools;
 mod whisper;
 mod whoami;
 
@@ -76,6 +77,10 @@ pub enum Task {
     /// run 'knowledge' task
     #[strum(serialize = "knowledge")]
     Knowledge,
+
+    /// run 'tools' task
+    #[strum(serialize = "tools")]
+    Tools,
 }
 
 impl Task {
@@ -101,6 +106,7 @@ impl Task {
             Self::Search => search::run(&config, &token).await,
             Self::People => people::run(&config, &token).await,
             Self::Knowledge => knowledge::run(&config, &token).await,
+            Self::Tools => tools::run(&config, &token).await,
         }?;
 
         aidevs::post_answer(&config, &token, &answer).await?;
