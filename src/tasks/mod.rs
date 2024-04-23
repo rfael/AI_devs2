@@ -1,5 +1,6 @@
 mod blogger;
 mod embedding;
+mod functions;
 mod helloapi;
 mod inprompt;
 mod liar;
@@ -41,6 +42,10 @@ pub enum Task {
     /// run 'whisper' task
     #[strum(serialize = "whisper")]
     Whisper,
+
+    /// run 'functions' task
+    #[strum(serialize = "functions")]
+    Functions,
 }
 
 impl Task {
@@ -59,6 +64,7 @@ impl Task {
             Self::Inprompt => inprompt::run(&config, &token).await,
             Task::Embedding => embedding::run().await,
             Self::Whisper => whisper::run(&config, &token).await,
+            Self::Functions => functions::run(&config, &token).await,
         }?;
 
         aidevs::post_answer(&config, &token, &answer).await?;
