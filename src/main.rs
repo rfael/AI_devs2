@@ -21,5 +21,10 @@ async fn main() -> anyhow::Result<()> {
     let config = Config::init_from_env()?;
     let cli = Cli::parse();
 
+    if cli.hint {
+        cli.task.hint(config).await?;
+        return Ok(());
+    }
+
     cli.task.run(config).await
 }
