@@ -9,4 +9,8 @@ pub(crate) struct Config {
     pub api_key: String,
     #[envconfig(from = "QDRANT_URL")]
     pub qdrant_url: Option<Url>,
+    #[envconfig(from = "API_LISTEN_ADDRESS")]
+    pub api_listen_address: Option<String>,
+    #[envconfig(from = "API_TUNNEL_URL")]
+    pub api_tunnel_url: Option<Url>,
 }

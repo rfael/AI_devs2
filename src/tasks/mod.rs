@@ -7,6 +7,7 @@ mod inprompt;
 mod knowledge;
 mod liar;
 mod moderation;
+mod ownapi;
 mod people;
 mod rodo;
 mod scraper;
@@ -86,6 +87,10 @@ pub enum Task {
     /// run 'gnome' task
     #[strum(serialize = "gnome")]
     Gnome,
+
+    /// run 'ownapi' task
+    #[strum(serialize = "ownapi")]
+    Ownapi,
 }
 
 impl Task {
@@ -113,6 +118,10 @@ impl Task {
             Self::Knowledge => knowledge::run(&config, &token).await,
             Self::Tools => tools::run(&config, &token).await,
             Self::Gnome => gnome::run(&config, &token).await,
+            Self::Ownapi => {
+                ownapi::run(&config, &token).await?;
+                return Ok(());
+            }
         }?;
 
         aidevs::post_answer(&config, &token, &answer).await?;
