@@ -13,6 +13,8 @@ use serde_json::{json, Value};
 
 use crate::config::Config;
 
+const MODEL: &str = "gpt-3.5-turbo";
+
 #[derive(Debug, Deserialize)]
 struct LiarTaskResponse {
     code: i32,
@@ -33,7 +35,7 @@ pub(super) async fn run(config: &Config, token: &str) -> anyhow::Result<Value> {
     let openai_config = OpenAIConfig::default();
     let client = Client::with_config(openai_config);
     let request = CreateChatCompletionRequestArgs::default()
-        .model("gpt-3.5-turbo")
+        .model(MODEL)
         .messages([
             ChatCompletionRequestSystemMessageArgs::default()
                 .content("You are a verifier of the truthfulness of answers. Respond briefly with YES or NO whether the given question and answer match.")

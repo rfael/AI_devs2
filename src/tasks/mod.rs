@@ -1,4 +1,5 @@
 mod blogger;
+mod embedding;
 mod helloapi;
 mod inprompt;
 mod liar;
@@ -31,6 +32,10 @@ pub enum Task {
     /// run 'inprompt' task
     #[strum(serialize = "inprompt")]
     Inprompt,
+
+    /// run 'embedding' task
+    #[strum(serialize = "embedding")]
+    Embedding,
 }
 
 impl Task {
@@ -47,6 +52,7 @@ impl Task {
             Self::Blogger => blogger::run(&config, &token).await,
             Self::Liar => liar::run(&config, &token).await,
             Self::Inprompt => inprompt::run(&config, &token).await,
+            Task::Embedding => embedding::run().await,
         }?;
 
         aidevs::post_answer(&config, &token, &answer).await?;

@@ -12,6 +12,8 @@ use serde_json::{json, Value};
 
 use crate::{aidevs, config::Config};
 
+const MODEL: &str = "gpt-3.5-turbo";
+
 #[derive(Debug, Deserialize)]
 struct InPromptTaskResponse {
     code: i32,
@@ -62,7 +64,7 @@ pub(super) async fn run(config: &Config, token: &str) -> anyhow::Result<Value> {
         .build()?;
 
     let request = CreateChatCompletionRequestArgs::default()
-        .model("gpt-3.5-turbo")
+        .model(MODEL)
         .messages([
             system_message.into(),
             ChatCompletionRequestUserMessageArgs::default()
