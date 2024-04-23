@@ -32,11 +32,11 @@ struct WhisperTaskResponse {
 pub(super) async fn run(config: &Config, token: &str) -> anyhow::Result<Value> {
     let task_response = aidevs::get_task::<WhisperTaskResponse>(config, token).await?;
     log::debug!("Task API response: {task_response:#?}");
+    log::info!("Task hint: {}", task_response.hint);
+    log::info!("Task message: {}", task_response.msg);
     if task_response.code != 0 {
         bail!("Code in response is not equal 0")
     }
-    log::info!("Task hint: {}", task_response.hint);
-    log::info!("Task message: {}", task_response.msg);
 
     let url_re = Regex::new(r"http://[^\s]+|https://[^\s]+")?;
 

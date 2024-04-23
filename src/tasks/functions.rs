@@ -22,11 +22,11 @@ struct FunctionsTaskResponse {
 pub(super) async fn run(config: &Config, token: &str) -> anyhow::Result<Value> {
     let task_response = aidevs::get_task::<FunctionsTaskResponse>(config, token).await?;
     log::debug!("Task API response: {task_response:#?}");
+    log::info!("Task hint: {}", task_response.hint1);
+    log::info!("Task message: {}", task_response.msg);
     if task_response.code != 0 {
         bail!("Code in response is not equal 0")
     }
-    log::info!("Task hint: {}", task_response.hint1);
-    log::info!("Task message: {}", task_response.msg);
 
     let add_user_function = ChatCompletionFunctionsArgs::default()
         .name("addUser")

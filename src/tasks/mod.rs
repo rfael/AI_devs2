@@ -5,6 +5,7 @@ mod helloapi;
 mod inprompt;
 mod liar;
 mod moderation;
+mod rodo;
 mod whisper;
 
 use clap::Subcommand;
@@ -46,6 +47,10 @@ pub enum Task {
     /// run 'functions' task
     #[strum(serialize = "functions")]
     Functions,
+
+    /// run 'rodo' task
+    #[strum(serialize = "rodo")]
+    Rodo,
 }
 
 impl Task {
@@ -65,6 +70,7 @@ impl Task {
             Task::Embedding => embedding::run().await,
             Self::Whisper => whisper::run(&config, &token).await,
             Self::Functions => functions::run(&config, &token).await,
+            Task::Rodo => rodo::run(&config, &token).await,
         }?;
 
         aidevs::post_answer(&config, &token, &answer).await?;
