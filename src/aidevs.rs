@@ -1,5 +1,5 @@
 use anyhow::{anyhow, bail};
-use serde::de::DeserializeOwned;
+use reqwest::Response;
 use serde::Deserialize;
 use serde_json::json;
 
@@ -68,12 +68,11 @@ pub async fn get_hint(config: &Config, task_name: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
-pub async fn get_task<T: DeserializeOwned>(config: &Config, token: &str) -> anyhow::Result<T> {
+pub async fn get_task(config: &Config, token: &str) -> anyhow::Result<Response> {
     let mut url = config.api_url.clone();
     url.set_path(&format!("task/{token}"));
 
-    let response = reqwest::get(url).await?.json::<T>().await?;
-
+    let response = reqwest::get(url).await?;
     Ok(response)
 }
 

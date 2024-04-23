@@ -1,26 +1,15 @@
 use anyhow::anyhow;
+use reqwest::Response;
 
-use crate::{
-    aidevs::{self, HelloApiResponse},
-    config::Config,
-};
+use crate::aidevs::HelloApiResponse;
 
-const TASK_NAME: &str = "helloapi";
-
-pub async fn run(config: Config) -> anyhow::Result<()> {
-    log::info!("Start 'helloapi' task");
-
-    let token = aidevs::get_task_token(&config, TASK_NAME).await?;
-    log::debug!("Received token: {token}");
-
-    let task_response = aidevs::get_task::<HelloApiResponse>(&config, &token).await?;
-    log::debug!("Task response: {task_response:#?}");
+pub async fn run(task_api_response: Response) -> anyhow::Result<String> {
+    let task_response = task_api_response.json::<HelloApiResponse>().await?;
+    log::debug!("Task API response: {task_response:#?}");
 
     let cookie = task_response
         .cookie
         .ok_or(anyhow!("API task response do not contain 'cookie' field"))?;
 
-    aidevs::post_answer(&config, &token, &cookie).await?;
-
-    Ok(())
+    Ok(cookie)
 }
