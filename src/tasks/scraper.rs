@@ -34,9 +34,17 @@ pub(super) async fn run(config: &Config, token: &str) -> anyhow::Result<Value> {
     log::info!("Task question: {}", task_response.question);
 
     let article = download_txt(task_response.input).await?;
-    log::info!("Article: {article}");
 
-    let answer = ask_llm(MODEL, &task_response.question, Some(article.lines())).await?;
+    let context_header = [
+        "Answer on my question only using data prowided after ### markers.",
+        "Answers concisely as possible",
+        "###",
+    ]
+    .join("\n");
+    let context = format!("{context_header}\n{article}");
+    log::debug!("Context for LLM: {context}");
+
+    let answer = ask_llm(MODEL, &task_response.question, Some(&context)).await?;
     if answer.len() > MAX_AMSWER_LENGTH {
         bail!("{MODEL} answer too long.")
     }

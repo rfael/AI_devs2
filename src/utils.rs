@@ -1,5 +1,3 @@
-use std::borrow::Cow;
-
 use anyhow::anyhow;
 use async_openai::{
     config::OpenAIConfig,
@@ -10,37 +8,16 @@ use async_openai::{
     Client,
 };
 
-pub(crate) async fn ask_llm<'a, I>(
+pub(crate) async fn ask_llm(
     model: &str,
     question: &str,
-    context: Option<I>,
-) -> anyhow::Result<String>
-where
-    I: Iterator<Item = &'a str>,
-{
-    let system_message_content = match context {
-        Some(ctx) => {
-            let context_header = [
-                "Answer on my question only using data prowided after ### markers.",
-                "Answers concisely as possible",
-                "###",
-            ];
-
-            let content = context_header
-                .into_iter()
-                .chain(ctx)
-                .collect::<Vec<_>>()
-                .join("\n");
-            Cow::from(content)
-        }
-        None => Cow::from("Answers concisely as possible"),
-    };
-
-    log::debug!("System message content: {system_message_content}");
-
+    context: Option<&str>,
+) -> anyhow::Result<String> {
+    let context = context.unwrap_or("Answers concisely as possible");
     let system_message = ChatCompletionRequestSystemMessageArgs::default()
-        .content(system_message_content)
+        .content(context)
         .build()?;
+
     let openai_config = OpenAIConfig::default();
     let client = Client::with_config(openai_config);
 

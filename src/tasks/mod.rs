@@ -8,6 +8,7 @@ mod moderation;
 mod rodo;
 mod scraper;
 mod whisper;
+mod whoami;
 
 use clap::Subcommand;
 use std::string::ToString;
@@ -56,6 +57,10 @@ pub enum Task {
     /// run 'scraper' task
     #[strum(serialize = "scraper")]
     Scraper,
+
+    /// run 'whoami' task
+    #[strum(serialize = "whoami")]
+    Whoami,
 }
 
 impl Task {
@@ -77,6 +82,7 @@ impl Task {
             Self::Functions => functions::run(&config, &token).await,
             Self::Rodo => rodo::run(&config, &token).await,
             Self::Scraper => scraper::run(&config, &token).await,
+            Self::Whoami => whoami::run(&config, &token).await,
         }?;
 
         aidevs::post_answer(&config, &token, &answer).await?;

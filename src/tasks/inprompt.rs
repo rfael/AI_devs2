@@ -31,13 +31,26 @@ pub(super) async fn run(config: &Config, token: &str) -> anyhow::Result<Value> {
     let name = find_capitalized_word(&task_response.question)
         .ok_or(anyhow!("Name in question not found."))?;
 
-    let context = task_response
-        .input
-        .iter()
-        .filter(|sentence| sentence.contains(name))
-        .map(|c| c.as_str());
+    let context_header = [
+        "Answer on my question only using data prowided after ### markers.",
+        "Answers concisely as possible",
+        "###",
+    ];
+    let context = context_header
+        .into_iter()
+        .chain(
+            task_response
+                .input
+                .iter()
+                .filter(|sentence| sentence.contains(name))
+                .map(|s| s.as_str()),
+        )
+        .collect::<Vec<_>>()
+        .join("\n");
 
-    let answer = ask_llm(MODEL, &task_response.question, Some(context)).await?;
+    log::debug!("Context for LLM: {context}");
+
+    let answer = ask_llm(MODEL, &task_response.question, Some(&context)).await?;
 
     let payload = json!({ "answer" : answer});
     Ok(payload)
