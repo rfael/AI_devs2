@@ -3,20 +3,16 @@ use async_openai::{config::OpenAIConfig, Client};
 use chrono::NaiveDate;
 use qdrant_client::{
     client::{Payload, QdrantClient},
-    qdrant::{
-        vectors_config, CreateCollection, Distance, PointStruct, SearchPoints, SearchResponse,
-        VectorParams, VectorsConfig,
-    },
+    qdrant::PointStruct,
 };
 use serde::Deserialize;
 use serde_json::{json, Value};
 use url::Url;
 
-use crate::{aidevs, config::Config, utils::embed_text};
+use crate::{aidevs, config::Config, utils};
 
 const QDRANT_COLLECTION: &str = "unknowNews";
 const UNKNOW_NEWS_ARCHIVE_URL: &str = "https://unknow.news/archiwum_aidevs.json";
-const EMBEDDING_MODEL: &str = "text-embedding-ada-002";
 
 #[derive(Debug, Deserialize)]
 struct SearchTaskResponse {
@@ -80,7 +76,7 @@ pub(super) async fn run(config: &Config, token: &str) -> anyhow::Result<Value> {
         Some(i) => i,
         None => {
             log::info!("Qdrant collection '{QDRANT_COLLECTION}' does not exists, creating it");
-            qdrant_create_collection(&qdrant_client).await?;
+            utils::qdrant_create_collection(&qdrant_client, QDRANT_COLLECTION).await?;
             qdrant_client
                 .collection_info(QDRANT_COLLECTION)
                 .await?
@@ -99,7 +95,13 @@ pub(super) async fn run(config: &Config, token: &str) -> anyhow::Result<Value> {
         qdrant_fill_collection(&qdrant_client, &openai_client).await?;
     }
 
-    let response = qdrand_search(&qdrant_client, &openai_client, &task_response.question).await?;
+    let response = utils::qdrand_search(
+        &qdrant_client,
+        &openai_client,
+        QDRANT_COLLECTION,
+        &task_response.question,
+    )
+    .await?;
     let result = response
         .result
         .first()
@@ -124,25 +126,6 @@ async fn get_unknow_news_archive() -> anyhow::Result<UnknowNews> {
     Ok(response)
 }
 
-async fn qdrant_create_collection(client: &QdrantClient) -> anyhow::Result<()> {
-    let vector_params = VectorParams {
-        size: 1536,
-        distance: Distance::Cosine.into(),
-        ..Default::default()
-    };
-    let vectors_config = VectorsConfig {
-        config: Some(vectors_config::Config::Params(vector_params)),
-    };
-    let collection_details = CreateCollection {
-        collection_name: QDRANT_COLLECTION.into(),
-        vectors_config: Some(vectors_config),
-        ..Default::default()
-    };
-    client.create_collection(&collection_details).await?;
-
-    Ok(())
-}
-
 async fn qdrant_fill_collection(
     qdrant_client: &QdrantClient,
     openai_client: &Client<OpenAIConfig>,
@@ -151,7 +134,7 @@ async fn qdrant_fill_collection(
 
     let mut points = Vec::with_capacity(news.len());
     for (index, item) in news.into_iter().enumerate() {
-        let embedding = embed_text(openai_client, EMBEDDING_MODEL, &item.info)
+        let embedding = utils::embed_text(openai_client, utils::EMBEDDING_MODEL, &item.info)
             .await?
             .embedding;
 
@@ -163,25 +146,4 @@ async fn qdrant_fill_collection(
         .await?;
 
     Ok(())
-}
-
-async fn qdrand_search(
-    qdrant_client: &QdrantClient,
-    openai_client: &Client<OpenAIConfig>,
-    query: &str,
-) -> anyhow::Result<SearchResponse> {
-    let query_embedding = embed_text(openai_client, EMBEDDING_MODEL, query)
-        .await?
-        .embedding;
-
-    let request = SearchPoints {
-        collection_name: QDRANT_COLLECTION.into(),
-        vector: query_embedding,
-        limit: 1,
-        with_payload: Some(true.into()),
-        ..Default::default()
-    };
-
-    let search_result = qdrant_client.search_points(&request).await?;
-    Ok(search_result)
 }
