@@ -11,6 +11,6 @@ pub(crate) struct Config {
     pub qdrant_url: Option<Url>,
     #[envconfig(from = "API_LISTEN_ADDRESS")]
     pub api_listen_address: Option<String>,
-    #[envconfig(from = "NGROK_TUNNEL_URL")]
-    pub ngrok_tunnel_url: Option<Url>,
+    #[envconfig(from = "API_TUNNEL_URL")]
+    pub api_tunnel_url: Option<Url>,
 }
