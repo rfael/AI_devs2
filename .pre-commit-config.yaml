@@ -14,3 +14,19 @@ repos:
       - id: fmt
       - id: cargo-check
       - id: clippy
+  - repo: local
+    hooks:
+      - id: test
+        name: test
+        description: Run tests with cargo test
+        entry: cargo test
+        language: system
+        types: [rust]
+        args: ["--"]
+      - id: build
+        name: build
+        description: Build using cargo build
+        language: system
+        types: ["rust"]
+        entry: cargo build
+        pass_filenames: false

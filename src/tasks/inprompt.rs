@@ -1,16 +1,8 @@
 use anyhow::{anyhow, bail};
-use async_openai::{
-    config::OpenAIConfig,
-    types::{
-        ChatCompletionRequestSystemMessageArgs, ChatCompletionRequestUserMessageArgs,
-        CreateChatCompletionRequestArgs,
-    },
-    Client,
-};
 use serde::Deserialize;
 use serde_json::{json, Value};
 
-use crate::{aidevs, config::Config};
+use crate::{aidevs, config::Config, utils::ask_llm};
 
 const MODEL: &str = "gpt-3.5-turbo";
 
@@ -38,50 +30,14 @@ pub(super) async fn run(config: &Config, token: &str) -> anyhow::Result<Value> {
 
     let name = find_capitalized_word(&task_response.question)
         .ok_or(anyhow!("Name in question not found."))?;
-    let context_header = vec![
-        "Answer on my question only using data prowided after ### markers.",
-        "Answers concisely as possible",
-        "###",
-    ];
-    let context = context_header
-        .into_iter()
-        .chain(
-            task_response
-                .input
-                .iter()
-                .filter(|sentence| sentence.contains(name))
-                .map(|s| s.as_str()),
-        )
-        .collect::<Vec<_>>()
-        .join("\n");
 
-    log::debug!("System message content: {context}");
+    let context = task_response
+        .input
+        .iter()
+        .filter(|sentence| sentence.contains(name))
+        .map(|c| c.as_str());
 
-    let openai_config = OpenAIConfig::default();
-    let client = Client::with_config(openai_config);
-    let system_message = ChatCompletionRequestSystemMessageArgs::default()
-        .content(context)
-        .build()?;
-
-    let request = CreateChatCompletionRequestArgs::default()
-        .model(MODEL)
-        .messages([
-            system_message.into(),
-            ChatCompletionRequestUserMessageArgs::default()
-                .content(task_response.question)
-                .build()?
-                .into(),
-        ])
-        .build()?;
-
-    let response = client.chat().create(request).await?;
-    let answer = response
-        .choices
-        .into_iter()
-        .find_map(|c| c.message.content)
-        .ok_or(anyhow!("GPT response do not contain answer."))?;
-
-    log::info!("GPT answer: {answer}");
+    let answer = ask_llm(MODEL, &task_response.question, Some(context)).await?;
 
     let payload = json!({ "answer" : answer});
     Ok(payload)

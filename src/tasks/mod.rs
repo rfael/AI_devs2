@@ -6,6 +6,7 @@ mod inprompt;
 mod liar;
 mod moderation;
 mod rodo;
+mod scraper;
 mod whisper;
 
 use clap::Subcommand;
@@ -51,6 +52,10 @@ pub enum Task {
     /// run 'rodo' task
     #[strum(serialize = "rodo")]
     Rodo,
+
+    /// run 'scraper' task
+    #[strum(serialize = "scraper")]
+    Scraper,
 }
 
 impl Task {
@@ -67,10 +72,11 @@ impl Task {
             Self::Blogger => blogger::run(&config, &token).await,
             Self::Liar => liar::run(&config, &token).await,
             Self::Inprompt => inprompt::run(&config, &token).await,
-            Task::Embedding => embedding::run().await,
+            Self::Embedding => embedding::run().await,
             Self::Whisper => whisper::run(&config, &token).await,
             Self::Functions => functions::run(&config, &token).await,
-            Task::Rodo => rodo::run(&config, &token).await,
+            Self::Rodo => rodo::run(&config, &token).await,
+            Self::Scraper => scraper::run(&config, &token).await,
         }?;
 
         aidevs::post_answer(&config, &token, &answer).await?;
