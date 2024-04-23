@@ -24,14 +24,6 @@ pub(crate) struct HintResponse {
     pub answer: String,
 }
 
-#[derive(Debug, Deserialize)]
-#[allow(dead_code)]
-pub(crate) struct HelloApiResponse {
-    pub code: i32,
-    pub msg: String,
-    pub cookie: Option<String>,
-}
-
 pub async fn get_task_token(config: &Config, task_name: &str) -> anyhow::Result<String> {
     let mut url = config.api_url.clone();
     url.set_path(&format!("token/{task_name}"));
