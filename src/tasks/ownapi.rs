@@ -85,7 +85,7 @@ pub(super) async fn run(config: &Config, token: &str) -> anyhow::Result<()> {
 
     let state = OwnapiState::new(Some(llm_context));
     let mut app = tide::with_state(state);
-    app.at("/ownapi").post(answer);
+    app.at("/ownapi").post(ownapi_request_handler);
 
     let api_future = tokio::spawn(app.listen(api_listen_addr));
     sleep(Duration::from_secs(1)).await;
@@ -105,7 +105,7 @@ pub(super) async fn run(config: &Config, token: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn answer(mut request: tide::Request<OwnapiState>) -> tide::Result {
+async fn ownapi_request_handler(mut request: tide::Request<OwnapiState>) -> tide::Result {
     let OwnapiRequest { question } = request.body_json().await?;
     log::debug!("Received question: {question}");
 

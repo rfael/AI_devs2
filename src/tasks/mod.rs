@@ -8,6 +8,7 @@ mod knowledge;
 mod liar;
 mod moderation;
 mod ownapi;
+mod ownapipro;
 mod people;
 mod rodo;
 mod scraper;
@@ -91,6 +92,10 @@ pub enum Task {
     /// run 'ownapi' task
     #[strum(serialize = "ownapi")]
     Ownapi,
+
+    /// run 'ownapipro' task
+    #[strum(serialize = "ownapipro")]
+    Ownapipro,
 }
 
 impl Task {
@@ -120,6 +125,10 @@ impl Task {
             Self::Gnome => gnome::run(&config, &token).await,
             Self::Ownapi => {
                 ownapi::run(&config, &token).await?;
+                return Ok(());
+            }
+            Self::Ownapipro => {
+                ownapipro::run(&config, &token).await?;
                 return Ok(());
             }
         }?;
