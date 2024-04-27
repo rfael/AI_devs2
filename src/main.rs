@@ -1,6 +1,7 @@
 mod aidevs;
 mod cli;
 mod config;
+mod render_form;
 mod tasks;
 mod utils;
 

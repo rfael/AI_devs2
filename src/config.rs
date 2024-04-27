@@ -13,4 +13,6 @@ pub(crate) struct Config {
     pub api_listen_address: Option<String>,
     #[envconfig(from = "API_TUNNEL_URL")]
     pub api_tunnel_url: Option<Url>,
+    #[envconfig(from = "RENDER_FORM_API_KEY")]
+    pub render_form_api_key: Option<String>,
 }

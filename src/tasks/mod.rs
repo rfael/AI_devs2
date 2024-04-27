@@ -6,6 +6,7 @@ mod helloapi;
 mod inprompt;
 mod knowledge;
 mod liar;
+mod meme;
 mod moderation;
 mod ownapi;
 mod ownapipro;
@@ -96,6 +97,10 @@ pub enum Task {
     /// run 'ownapipro' task
     #[strum(serialize = "ownapipro")]
     Ownapipro,
+
+    /// run 'meme' task
+    #[strum(serialize = "meme")]
+    Meme,
 }
 
 impl Task {
@@ -131,6 +136,7 @@ impl Task {
                 ownapipro::run(&config, &token).await?;
                 return Ok(());
             }
+            Self::Meme => meme::run(&config, &token).await,
         }?;
 
         aidevs::post_answer(&config, &token, &answer).await?;
