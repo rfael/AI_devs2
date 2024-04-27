@@ -8,6 +8,7 @@ mod knowledge;
 mod liar;
 mod meme;
 mod moderation;
+mod optimaldb;
 mod ownapi;
 mod ownapipro;
 mod people;
@@ -18,6 +19,7 @@ mod tools;
 mod whisper;
 mod whoami;
 
+use anyhow::bail;
 use clap::Subcommand;
 use std::string::ToString;
 use strum_macros::Display;
@@ -101,6 +103,10 @@ pub enum Task {
     /// run 'meme' task
     #[strum(serialize = "meme")]
     Meme,
+
+    /// run 'optimaldb' task
+    #[strum(serialize = "optimaldb")]
+    Optimaldb,
 }
 
 impl Task {
@@ -137,9 +143,14 @@ impl Task {
                 return Ok(());
             }
             Self::Meme => meme::run(&config, &token).await,
+            Self::Optimaldb => optimaldb::run(&config, &token).await,
         }?;
 
-        aidevs::post_answer(&config, &token, &answer).await?;
+        let answer_response = aidevs::post_answer(&config, &token, &answer).await?;
+        if answer_response.code != 0 {
+            bail!(answer_response.msg)
+        }
+
         Ok(())
     }
 
