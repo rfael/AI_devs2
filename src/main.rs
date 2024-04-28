@@ -1,4 +1,5 @@
 mod aidevs;
+mod brave_search;
 mod cli;
 mod config;
 mod render_form;

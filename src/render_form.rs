@@ -4,8 +4,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 use url::Url;
 
-const API_V2_BASE_URL: &str = "https://get.renderform.io/api/v2";
-
 pub enum RenderFormRenderDataField {
     Text(String),
     Source(Url),
@@ -49,6 +47,10 @@ pub struct RenderFormClient {
     client: Client,
 }
 
+enum RenderFormHeader {
+    ApiKey,
+}
+
 impl RenderFormRenderDataBuilder {
     pub fn new() -> Self {
         Self(Map::new())
@@ -69,6 +71,8 @@ impl RenderFormRenderDataBuilder {
 }
 
 impl RenderFormClient {
+    const API_BASE_URL: &'static str = "https://get.renderform.io/api/v2";
+
     pub fn new(api_key: &str) -> Self {
         Self {
             api_key: api_key.to_string(),
@@ -82,8 +86,8 @@ impl RenderFormClient {
     ) -> anyhow::Result<RenderFormRenderResponse> {
         let response = self
             .client
-            .post(format!("{API_V2_BASE_URL}/render"))
-            .header("X-API-KEY", &self.api_key)
+            .post(format!("{}/render", Self::API_BASE_URL))
+            .header(RenderFormHeader::ApiKey.as_str(), &self.api_key)
             .json(&request)
             .send()
             .await?;
@@ -100,5 +104,13 @@ impl RenderFormClient {
 
         let response = response.json::<RenderFormRenderResponse>().await?;
         Ok(response)
+    }
+}
+
+impl RenderFormHeader {
+    fn as_str(&self) -> &'static str {
+        match self {
+            Self::ApiKey => "X-API-KEY",
+        }
     }
 }

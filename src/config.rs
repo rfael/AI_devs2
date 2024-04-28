@@ -15,4 +15,6 @@ pub(crate) struct Config {
     pub api_tunnel_url: Option<Url>,
     #[envconfig(from = "RENDER_FORM_API_KEY")]
     pub render_form_api_key: Option<String>,
+    #[envconfig(from = "BRAVE_SEARCH_API_KEY")]
+    pub brave_search_api_key: Option<String>,
 }

@@ -2,6 +2,7 @@ mod blogger;
 mod embedding;
 mod functions;
 mod gnome;
+mod google;
 mod helloapi;
 mod inprompt;
 mod knowledge;
@@ -107,6 +108,10 @@ pub enum Task {
     /// run 'optimaldb' task
     #[strum(serialize = "optimaldb")]
     Optimaldb,
+
+    /// run 'google' task
+    #[strum(serialize = "google")]
+    Google,
 }
 
 impl Task {
@@ -144,6 +149,10 @@ impl Task {
             }
             Self::Meme => meme::run(&config, &token).await,
             Self::Optimaldb => optimaldb::run(&config, &token).await,
+            Self::Google => {
+                google::run(&config, &token).await?;
+                return Ok(());
+            }
         }?;
 
         let answer_response = aidevs::post_answer(&config, &token, &answer).await?;
